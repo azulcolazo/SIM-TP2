@@ -33,6 +33,7 @@ def uniforme(n, a, b):
 
 
 def poisson(n, media):
+    #lambda = media
     puntos = []
     for i in range(n):
         p = 1
@@ -52,6 +53,7 @@ def poisson(n, media):
 
 
 def exponencial(n, l):
+    #l = 1/media
     puntos = []
 
     for i in range(n):

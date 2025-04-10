@@ -4,6 +4,8 @@ from tkinter import ttk, messagebox
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+from chi_cuadrado import chi_cuadrado_test
+
 
 class VentanaDist:
     def __init__(self, root, distribuciones):
@@ -47,10 +49,19 @@ class VentanaDist:
         self.n_bins.grid(row=3, column=1, sticky=tk.W, pady=5)
         self.n_bins.insert(0, "50")
 
+
+        #etiqueta para la aceptacion
+        ttk.Label(control_frame, text="Aceptacion (α):").grid(row=4, column=0, sticky=tk.W, pady=5)
+        self.alpha_entry = ttk.Entry(control_frame)
+        self.alpha_entry.grid(row=4, column=1, sticky=tk.W, pady=5)
+        self.alpha_entry.insert(0, "0.05")
+
         # Botón generar
-        ttk.Button(control_frame, text="Generar Distribución", command=self.generate_distribution).grid(row=4, column=0,
+        ttk.Button(control_frame, text="Generar Distribución", command=self.generate_distribution).grid(row=5, column=0,
                                                                                                         columnspan=2,
                                                                                                         pady=10)
+
+
 
         # Frame para el gráfico
         self.plot_frame = ttk.LabelFrame(main_frame, text="Histograma", padding="10")
@@ -110,7 +121,7 @@ class VentanaDist:
             self.param_entries["media"] = lambda_entry
 
         elif dist == "Exponencial":
-            ttk.Label(self.param_frame, text="Lambda (λ):").grid(row=0, column=0, sticky=tk.W, pady=5)
+            ttk.Label(self.param_frame, text="Lambda (λ = 1/media):").grid(row=0, column=0, sticky=tk.W, pady=5)
             lambda_entry = ttk.Entry(self.param_frame)
             lambda_entry.grid(row=0, column=1, sticky=tk.W, pady=5)
             lambda_entry.insert(0, "1")
@@ -162,6 +173,9 @@ class VentanaDist:
                 datos = self.distribuciones.exponencial(n, lmbda)
                 titulo = f"Distribución Exponencial (λ={lmbda})"
 
+            for dato in datos:
+                print(dato)
+
             # Generar histograma
             self.ax.clear()
             self.ax.hist(datos, bins=bins, alpha=0.7, color='skyblue', edgecolor='black')
@@ -170,6 +184,8 @@ class VentanaDist:
             self.ax.set_ylabel("Frecuencia")
             self.ax.grid(axis='y', alpha=0.75)
 
+
+
             # Añadir información del número de intervalos al título
             self.ax.set_title(f"{titulo}\nIntervalos: {bins}")
 
@@ -177,7 +193,34 @@ class VentanaDist:
             self.figure.tight_layout()
             self.canvas.draw()
 
+            # Nivel de significancia
+            alpha = float(self.alpha_entry.get())
+            params = (0,0)
+            # Realizar prueba chi-cuadrado
+            if dist_type == "Normal":
+                params = (media, desviacion)
+            elif dist_type == "Uniforme":
+                params = (a, b)
+            elif dist_type == "Poisson":
+                params = (media,)
+            elif dist_type == "Exponencial":
+                params = (lmbda,)
+
+            chi2_calculado, chi2_tabla, gl = chi_cuadrado_test(datos, bins, alpha, dist_type, params)
+
+            if not chi2_calculado:
+                raise ValueError("no hay suficientes grados de libertad para calcular chi2")
+            if chi2_calculado <= chi2_tabla:
+                resultado = "Distribución **aceptada**"
+            else:
+                resultado = "Distribución **rechazada**"
+
+            messagebox.showinfo(
+                "Resultado del Test Chi-cuadrado",
+                f"{resultado}\n\n"
+                f"χ² calculado: {chi2_calculado:.3f}\n"
+                f"χ² crítico (α={alpha}, gl={gl}): {chi2_tabla:.3f}\n"
+            )
+
         except ValueError as e:
             messagebox.showerror("Error", str(e))
-        except Exception as e:
-            messagebox.showerror("Error", f"Error inesperado: {str(e)}")
