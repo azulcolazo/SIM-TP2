@@ -18,7 +18,7 @@ def normal(n, media, desviacion):
         puntos.append(x1)
         puntos.append(x2)
 
-    return puntos
+    return puntos #tamaño de la lista = 2 * n
 
 def uniforme(n, a, b):
     puntos = []

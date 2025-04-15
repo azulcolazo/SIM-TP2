@@ -4,16 +4,20 @@ import scipy.stats as stats
 import numpy as np
 
 
-def chi_cuadrado_test(datos, bins, alpha, distribucion, params):
-    global chi2_calculado
+def chi_cuadrado_test(datos, bins, alpha, distribucion, params): #muestra, cantidad de intervalos, rechazo, parametros
+
+    # histograma a partir de los datos aleatrios y con "bins" cantidad de intervalos
+    # observados: frecuencia en cada intervalo, bordes: limites de los intervalos
     observados, bordes = np.histogram(datos, bins=bins)
+
+    # lista de los valores esperados para cada intervalo del histograma
     esperados = []
 
     for i in range(len(bordes) - 1):
         #limite inferior y superior
         a, b = bordes[i], bordes[i + 1]
 
-        #probabilidad del intervalo entre el limite inferior y superior segun la distribucion
+        #probabilidad teorica de que un dato caiga entre el limite inferior (a) y superior (b) segun la distribucion
         if distribucion == "Normal":
             mu, sigma = params
             prob = stats.norm.cdf(b, mu, sigma) - stats.norm.cdf(a, mu, sigma)
@@ -30,7 +34,7 @@ def chi_cuadrado_test(datos, bins, alpha, distribucion, params):
         else:
             prob = 0
 
-        #se agrega la frecuencia a una lista de los valores esperados
+        # Se multiplica la probabilidad por el total de datos para obtener la frecuencia esperada en ese intervalo y se agrega a la lista
         esperados.append(prob * len(datos))
 
     # Agrupar esperados menores a 5
@@ -63,9 +67,10 @@ def chi_cuadrado_test(datos, bins, alpha, distribucion, params):
     for i in range(len(obs_agrupados)):
         chi2_calculado += (obs_agrupados[i] - exp_agrupados[i]) ** 2 / exp_agrupados[i]
 
-    #intervalos - 1 ya que no se calcula ningun dato empirico
+    #intervalos - 1 ya que no se calcula ningun dato empirico (los datos son ingresados por teclado)
     grados_libertad = len(obs_agrupados) - 1
     if not grados_libertad > 0:
+        # hay un unico intervalo
         return None, None, None
     chi2_tabla = stats.chi2.ppf(1 - alpha, df=grados_libertad)
 

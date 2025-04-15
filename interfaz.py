@@ -51,7 +51,7 @@ class VentanaDist:
 
 
         #etiqueta para la aceptacion
-        ttk.Label(control_frame, text="Aceptacion (α):").grid(row=4, column=0, sticky=tk.W, pady=5)
+        ttk.Label(control_frame, text="Rechazo (α):").grid(row=4, column=0, sticky=tk.W, pady=5)
         self.alpha_entry = ttk.Entry(control_frame)
         self.alpha_entry.grid(row=4, column=1, sticky=tk.W, pady=5)
         self.alpha_entry.insert(0, "0.05")
@@ -173,8 +173,6 @@ class VentanaDist:
                 datos = self.distribuciones.exponencial(n, lmbda)
                 titulo = f"Distribución Exponencial (λ={lmbda})"
 
-            for dato in datos:
-                print(dato)
 
             # Generar histograma
             self.ax.clear()
@@ -211,7 +209,7 @@ class VentanaDist:
             if not chi2_calculado:
                 raise ValueError("no hay suficientes grados de libertad para calcular chi2")
             if chi2_calculado <= chi2_tabla:
-                resultado = "Distribución **aceptada**"
+                resultado = "Distribución **no rechazada**"
             else:
                 resultado = "Distribución **rechazada**"
 
